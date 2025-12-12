@@ -28,6 +28,8 @@ import {
 } from "@/components/dashboard/Charts";
 import { RecentTradesTable } from "@/components/dashboard/RecentTrades";
 import { Calendar } from "@/components/dashboard/Calendar";
+import { WatchlistCard } from "@/components/widgets/WatchlistCard";
+import { EconomicCalendarSection } from "@/components/widgets/EconomicCalendarSection";
 
 export default async function DashboardPage() {
     // Fetch all data in parallel
@@ -72,11 +74,16 @@ export default async function DashboardPage() {
                 {displayStats && <StatsCards stats={displayStats} />}
             </Suspense>
 
-            {/* Calendar and Equity Curve */}
-            <div className="grid gap-6 lg:grid-cols-2">
+            {/* Calendar, Watchlist and Equity Curve - 3 columns on xl */}
+            <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
                 {/* Calendar Heatmap */}
                 <Suspense fallback={<ChartSkeleton />}>
                     <Calendar trades={calendarTrades} />
+                </Suspense>
+
+                {/* TradingView Watchlist */}
+                <Suspense fallback={<ChartSkeleton />}>
+                    <WatchlistCard height={450} />
                 </Suspense>
 
                 {/* Equity Curve */}
@@ -109,6 +116,11 @@ export default async function DashboardPage() {
             {/* Detailed Stats */}
             <Suspense fallback={<DetailedStatsSkeleton />}>
                 {displayStats && <DetailedStats stats={displayStats} />}
+            </Suspense>
+
+            {/* Economic Calendar - Full width section */}
+            <Suspense fallback={<Skeleton className="h-[550px] w-full rounded-xl" />}>
+                <EconomicCalendarSection height={500} />
             </Suspense>
 
             {/* Recent Trades */}
