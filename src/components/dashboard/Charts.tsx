@@ -71,12 +71,16 @@ export function EquityCurveChart({ data }: EquityCurveChartProps) {
                                     return `${date.getDate()}/${date.getMonth() + 1}`;
                                 }}
                                 className="text-xs"
-                                tick={{ fill: "hsl(var(--muted-foreground))" }}
+                                tick={{ fill: "#94a3b8", fontSize: 11 }}
+                                axisLine={{ stroke: "#475569" }}
+                                tickLine={{ stroke: "#475569" }}
                             />
                             <YAxis
                                 tickFormatter={(value) => `$${value.toLocaleString()}`}
                                 className="text-xs"
-                                tick={{ fill: "hsl(var(--muted-foreground))" }}
+                                tick={{ fill: "#94a3b8", fontSize: 11 }}
+                                axisLine={{ stroke: "#475569" }}
+                                tickLine={{ stroke: "#475569" }}
                             />
                             <Tooltip
                                 content={({ active, payload }) => {
@@ -141,13 +145,17 @@ export function StrategyPerformanceChart({ data }: StrategyChartProps) {
                             <XAxis
                                 type="number"
                                 tickFormatter={(value) => `$${value.toLocaleString()}`}
-                                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                                tick={{ fill: "#94a3b8", fontSize: 12 }}
+                                axisLine={{ stroke: "#475569" }}
+                                tickLine={{ stroke: "#475569" }}
                             />
                             <YAxis
                                 type="category"
                                 dataKey="name"
                                 width={100}
-                                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                                tick={{ fill: "#94a3b8", fontSize: 12 }}
+                                axisLine={{ stroke: "#475569" }}
+                                tickLine={{ stroke: "#475569" }}
                             />
                             <Tooltip
                                 content={({ active, payload }) => {

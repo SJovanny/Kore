@@ -28,8 +28,9 @@ import {
 } from "@/components/dashboard/Charts";
 import { RecentTradesTable } from "@/components/dashboard/RecentTrades";
 import { Calendar } from "@/components/dashboard/Calendar";
-import { WatchlistCard } from "@/components/widgets/WatchlistCard";
+import { GoalsNotesPanel } from "@/components/dashboard/GoalsNotesPanel";
 import { EconomicCalendarSection } from "@/components/widgets/EconomicCalendarSection";
+import { HeatmapCard } from "@/components/widgets/HeatmapCard";
 
 export default async function DashboardPage() {
     // Fetch all data in parallel
@@ -74,29 +75,33 @@ export default async function DashboardPage() {
                 {displayStats && <StatsCards stats={displayStats} />}
             </Suspense>
 
-            {/* Calendar, Watchlist and Equity Curve - 3 columns on xl */}
-            <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
-                {/* Calendar Heatmap */}
-                <Suspense fallback={<ChartSkeleton />}>
-                    <Calendar trades={calendarTrades} />
-                </Suspense>
+            {/* Calendar (2/3) + Goals & Notes (1/3) */}
+            <div className="grid gap-6 lg:grid-cols-3">
+                {/* Calendar Heatmap - 2/3 width */}
+                <div className="lg:col-span-2">
+                    <Suspense fallback={<Skeleton className="h-[320px] w-full rounded-xl" />}>
+                        <Calendar trades={calendarTrades} />
+                    </Suspense>
+                </div>
 
-                {/* TradingView Watchlist */}
-                <Suspense fallback={<ChartSkeleton />}>
-                    <WatchlistCard height={450} />
-                </Suspense>
-
-                {/* Equity Curve */}
-                <Suspense fallback={<ChartSkeleton />}>
-                    {displayEquity.length > 0 ? (
-                        <EquityCurveChart data={displayEquity} />
-                    ) : (
-                        <div className="flex items-center justify-center h-[300px] bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
-                            <p className="text-slate-500">Aucun trade pour afficher la courbe</p>
-                        </div>
-                    )}
-                </Suspense>
+                {/* Goals & Notes Panel - 1/3 width */}
+                <div className="lg:col-span-1">
+                    <Suspense fallback={<Skeleton className="h-[320px] w-full rounded-xl" />}>
+                        <GoalsNotesPanel />
+                    </Suspense>
+                </div>
             </div>
+
+            {/* Equity Curve - Full Width */}
+            <Suspense fallback={<ChartSkeleton />}>
+                {displayEquity.length > 0 ? (
+                    <EquityCurveChart data={displayEquity} />
+                ) : (
+                    <div className="flex items-center justify-center h-[300px] bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                        <p className="text-slate-500">Aucun trade pour afficher la courbe</p>
+                    </div>
+                )}
+            </Suspense>
 
             {/* Charts Grid */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -118,10 +123,16 @@ export default async function DashboardPage() {
                 {displayStats && <DetailedStats stats={displayStats} />}
             </Suspense>
 
-            {/* Economic Calendar - Full width section */}
-            <Suspense fallback={<Skeleton className="h-[550px] w-full rounded-xl" />}>
-                <EconomicCalendarSection height={500} />
-            </Suspense>
+            {/* Economic Calendar + TradingView Heatmap - Side by Side */}
+            <div className="grid gap-6 lg:grid-cols-2">
+                <Suspense fallback={<Skeleton className="h-[550px] w-full rounded-xl" />}>
+                    <EconomicCalendarSection height={500} />
+                </Suspense>
+
+                <Suspense fallback={<Skeleton className="h-[550px] w-full rounded-xl" />}>
+                    <HeatmapCard height={460} />
+                </Suspense>
+            </div>
 
             {/* Recent Trades */}
             <Suspense fallback={<TableSkeleton />}>

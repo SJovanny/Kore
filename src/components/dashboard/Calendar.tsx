@@ -20,6 +20,8 @@ import {
     endOfWeek,
     isToday,
     isFuture,
+    addWeeks,
+    subWeeks,
 } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -48,6 +50,8 @@ import {
     Plus,
     Wallet,
     Eye,
+    CalendarDays,
+    LayoutGrid,
 } from "lucide-react";
 
 // Types
@@ -133,6 +137,7 @@ export function Calendar({
     // Modal state
     const [isAddTradeModalOpen, setIsAddTradeModalOpen] = useState(false);
     const [modalSelectedDate, setModalSelectedDate] = useState<Date>(new Date());
+    const [viewMode, setViewMode] = useState<"month" | "week">("week");
 
     // Handle portfolio change
     const handlePortfolioChange = (portfolioId: string) => {
@@ -185,17 +190,33 @@ export function Calendar({
 
     // Generate calendar days
     const calendarDays = useMemo(() => {
+        if (viewMode === "week") {
+            const weekStart = startOfWeek(currentMonth, { weekStartsOn: 1 });
+            const weekEnd = endOfWeek(currentMonth, { weekStartsOn: 1 });
+            return eachDayOfInterval({ start: weekStart, end: weekEnd });
+        }
         const monthStart = startOfMonth(currentMonth);
         const monthEnd = endOfMonth(currentMonth);
         const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
         const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
-
         return eachDayOfInterval({ start: calendarStart, end: calendarEnd });
-    }, [currentMonth]);
+    }, [currentMonth, viewMode]);
 
-    // Month navigation
-    const goToPreviousMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
-    const goToNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
+    // Navigation
+    const goToPrevious = () => {
+        if (viewMode === "week") {
+            setCurrentMonth(subWeeks(currentMonth, 1));
+        } else {
+            setCurrentMonth(subMonths(currentMonth, 1));
+        }
+    };
+    const goToNext = () => {
+        if (viewMode === "week") {
+            setCurrentMonth(addWeeks(currentMonth, 1));
+        } else {
+            setCurrentMonth(addMonths(currentMonth, 1));
+        }
+    };
     const goToToday = () => setCurrentMonth(new Date());
 
     // Handle day click
@@ -244,7 +265,7 @@ export function Calendar({
 
     return (
         <Card className="overflow-hidden">
-            <CardHeader className="pb-4">
+            <CardHeader className="pb-2">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <CardTitle className="flex items-center gap-2">
                         <CalendarIcon className="w-5 h-5 text-blue-600" />
@@ -276,59 +297,81 @@ export function Calendar({
                     </div>
                 </div>
 
-                {/* Month Navigation */}
-                <div className="flex items-center justify-between mt-4">
+                {/* Navigation */}
+                <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" onClick={goToPreviousMonth}>
+                        <Button variant="ghost" size="icon" onClick={goToPrevious}>
                             <ChevronLeft className="w-4 h-4" />
                         </Button>
                         <Button variant="ghost" size="sm" onClick={goToToday} className="px-3 font-semibold">
-                            {format(currentMonth, "MMMM yyyy", { locale: fr })}
+                            {viewMode === "week"
+                                ? `${format(startOfWeek(currentMonth, { weekStartsOn: 1 }), "d MMM", { locale: fr })} - ${format(endOfWeek(currentMonth, { weekStartsOn: 1 }), "d MMM yyyy", { locale: fr })}`
+                                : format(currentMonth, "MMMM yyyy", { locale: fr })}
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={goToNextMonth}>
+                        <Button variant="ghost" size="icon" onClick={goToNext}>
                             <ChevronRight className="w-4 h-4" />
                         </Button>
                     </div>
 
-                    {/* Quick add today button */}
-                    <Button
-                        size="sm"
-                        onClick={() => handleAddTrade(new Date())}
-                        className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                    >
-                        <Plus className="w-4 h-4 mr-1" />
-                        Trade aujourd'hui
-                    </Button>
+                    {/* View toggle + Quick add */}
+                    <div className="flex items-center gap-2">
+                        <div className="flex items-center border rounded-lg overflow-hidden">
+                            <Button
+                                variant={viewMode === "week" ? "default" : "ghost"}
+                                size="sm"
+                                className="h-7 px-2 rounded-none"
+                                onClick={() => setViewMode("week")}
+                            >
+                                <CalendarDays className="w-4 h-4" />
+                            </Button>
+                            <Button
+                                variant={viewMode === "month" ? "default" : "ghost"}
+                                size="sm"
+                                className="h-7 px-2 rounded-none"
+                                onClick={() => setViewMode("month")}
+                            >
+                                <LayoutGrid className="w-4 h-4" />
+                            </Button>
+                        </div>
+                        <Button
+                            size="sm"
+                            onClick={() => handleAddTrade(new Date())}
+                            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                        >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Trade
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Monthly summary */}
-                <div className="grid grid-cols-4 gap-3 mt-4">
-                    <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                        <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                <div className="grid grid-cols-4 gap-2 mt-2">
+                    <div className="text-center p-2 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                        <p className="text-base font-bold text-slate-900 dark:text-white">
                             {monthlyStats.totalTrades}
                         </p>
                         <p className="text-xs text-slate-500">Trades</p>
                     </div>
-                    <div className="text-center p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20">
-                        <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                    <div className="text-center p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20">
+                        <p className="text-base font-bold text-emerald-600 dark:text-emerald-400">
                             {monthlyStats.winDays}
                         </p>
                         <p className="text-xs text-slate-500">Jours +</p>
                     </div>
-                    <div className="text-center p-3 rounded-xl bg-red-50 dark:bg-red-900/20">
-                        <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+                    <div className="text-center p-2 rounded-lg bg-red-50 dark:bg-red-900/20">
+                        <p className="text-base font-bold text-red-600 dark:text-red-400">
                             {monthlyStats.lossDays}
                         </p>
                         <p className="text-xs text-slate-500">Jours -</p>
                     </div>
                     <div className={cn(
-                        "text-center p-3 rounded-xl",
+                        "text-center p-2 rounded-lg",
                         monthlyStats.totalPnl >= 0
                             ? "bg-emerald-50 dark:bg-emerald-900/20"
                             : "bg-red-50 dark:bg-red-900/20"
                     )}>
                         <p className={cn(
-                            "text-xl font-bold",
+                            "text-base font-bold",
                             monthlyStats.totalPnl >= 0
                                 ? "text-emerald-600 dark:text-emerald-400"
                                 : "text-red-600 dark:text-red-400"
@@ -340,7 +383,7 @@ export function Calendar({
                 </div>
             </CardHeader>
 
-            <CardContent>
+            <CardContent className="pt-2">
                 {/* Week days header */}
                 <div className="grid grid-cols-7 gap-1 mb-2">
                     {weekDays.map((day) => (
@@ -528,22 +571,6 @@ export function Calendar({
                             </Popover>
                         );
                     })}
-                </div>
-
-                {/* Legend */}
-                <div className="flex items-center justify-center gap-4 mt-6 text-xs text-slate-500">
-                    <div className="flex items-center gap-1.5">
-                        <div className="w-3 h-3 rounded bg-red-500" />
-                        <span>Perte</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                        <div className="w-3 h-3 rounded bg-slate-200 dark:bg-slate-700" />
-                        <span>Aucun trade</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                        <div className="w-3 h-3 rounded bg-emerald-500" />
-                        <span>Profit</span>
-                    </div>
                 </div>
             </CardContent>
 
